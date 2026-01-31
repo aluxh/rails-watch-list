@@ -7,3 +7,27 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+require 'open-uri'
+require 'json'
+
+# Clean the database
+Movie.destroy_all
+
+url = "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1"
+bearer_token = "Bearer #{ENV['TMDB_API_KEY']}"
+
+response = URI.open(url, "Authorization" => bearer_token, "accept" => "application/json")
+data = JSON.parse(response.read)
+movies = data["results"]
+
+# puts movies.length
+
+# Create the database
+movies.each do |movie_data|
+  Movie.create!(
+    title: movie_data["title"],
+    overview: movie_data["overview"],
+    poster_url: "https://image.tmdb.org/t/p/w500#{movie_data['poster_path']}",
+    rating: movie_data["vote_average"]
+  )
+end
