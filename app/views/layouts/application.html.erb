@@ -11,6 +11,16 @@
   </head>
 
   <body>
+    <nav class="navbar bg-light my-1">
+      <div class="container-fluid">
+        <%= image_tag "website_logo.png", alt: "Movie Watchlist", class: "navbar-brand", height: 60 %>
+        <div class="d-flex gap-2">
+          <%= link_to "My List", root_path, class: "btn btn-outline-primary" %>
+          <%= link_to "New List", new_list_path, class: "btn btn-outline-primary" %>
+        </div>
+      </div>
+    </nav>
+
     <%= yield %>
   </body>
 </html>

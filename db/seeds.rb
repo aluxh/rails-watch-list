@@ -13,21 +13,41 @@ require 'json'
 # Clean the database
 Movie.destroy_all
 
-url = "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1"
-bearer_token = "Bearer #{ENV['TMDB_API_KEY']}"
+page_num = 1
+total_movies_created = 0
 
-response = URI.open(url, "Authorization" => bearer_token, "accept" => "application/json")
-data = JSON.parse(response.read)
-movies = data["results"]
+loop do
+  url = "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=#{page_num}"
+  bearer_token = "Bearer #{ENV['TMDB_API_KEY']}"
 
-# puts movies.length
+  begin
+    response = URI.open(url, "Authorization" => bearer_token, "accept" => "application/json")
+    data = JSON.parse(response.read)
 
-# Create the database
-movies.each do |movie_data|
-  Movie.create!(
-    title: movie_data["title"],
-    overview: movie_data["overview"],
-    poster_url: "https://image.tmdb.org/t/p/w500#{movie_data['poster_path']}",
-    rating: movie_data["vote_average"]
-  )
+    data["results"].each do |movie_data|
+      Movie.create!(
+        title: movie_data["title"],
+        overview: movie_data["overview"],
+        poster_url: "https://image.tmdb.org/t/p/w500#{movie_data['poster_path']}",
+        rating: movie_data["vote_average"]
+      )
+      total_movies_created += 1
+    end
+
+    puts "Page #{page_num} data loaded - #{data["results"].size} movies created"
+
+    break if page_num >= data["total_pages"]
+    page_num += 1
+
+    sleep(0.5)
+
+  rescue OpenURI::HTTPError => e
+    puts "HTTP Error on page #{page_num}: #{e.message}"
+    break
+  rescue StandardError => e
+    puts "Error processing page #{page_num}: #{e.message}"
+    break
+  end
 end
+
+puts "\nTotal movies created: #{total_movies_created}"
