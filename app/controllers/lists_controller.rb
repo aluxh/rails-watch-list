@@ -22,6 +22,7 @@ class ListsController < ApplicationController
   # GET /lists/:id
   def show
     @list = List.find(params[:id])
+    @review = Review.new
   end
 
   private
